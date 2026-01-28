@@ -101,6 +101,14 @@ GitHub Actions pipeline with the following checks:
 - **Build**: Verify that both backend and frontend build successfully.
 - **Dependency review**: Flag new dependencies with known vulnerabilities on PRs.
 
+## Documentation
+
+- **Tool**: mdBook for user-facing documentation.
+- **Source**: Markdown files in `docs/` directory, with `docs/book.toml` as the mdBook configuration and `docs/src/SUMMARY.md` as the table of contents.
+- **Build**: Run `mdbook build docs/` to generate static HTML output in `docs/book/`.
+- **Dev server**: Run `mdbook serve docs/` for live-reloading preview during authoring.
+- **Scope**: User documentation only (getting started, feature guides, FAQ). Developer docs stay in `CLAUDE.md` and inline code comments.
+
 ## Conventions
 
 - License: GNU Affero General Public License v3 (AGPL-3.0)
