@@ -1,161 +1,177 @@
-# redo — Software Requirements Specification (v1)
+# redo — Product Requirements (v1)
 
-## 1. Purpose
+## 1. Vision
 
-The redo application shall provide a simple, web-based tool for managing recurring actions (“redos”) using calendar-based intervals. The system shall allow users to view redos that are due or due soon, complete or skip them, and optionally attach structured metadata to completions.
+**redo** is a web app for people who want to stay on top of things that repeat — oil changes, dentist visits, filter replacements, backup checks. You define a task and an interval, and redo tells you when it's time again.
 
+No notifications. No collaboration. No dashboards. Just a clear list of what's due and a one-tap way to mark it done.
 
 ## 2. Scope
 
-The system shall:
-- Support authenticated individual users
-- Store and manage recurring items with fixed calendar intervals
-- Provide a responsive web interface usable on mobile, tablet, and desktop
-- Maintain a history of completions
-- Allow limited correction of user actions (undo via deletion)
+The first version of redo focuses on a tight set of capabilities:
 
-The system shall not provide notifications, collaboration, analytics, or advanced scheduling.
+- **Authenticated individual accounts** — each user sees only their own data.
+- **Recurring items with fixed calendar intervals** — every N days, weeks, months, or years.
+- **A responsive web UI** — usable on phones, tablets, and desktops.
+- **Completion history** — a log of every time you completed a task, with optional metadata.
+- **Undo support** — mistakes can be corrected by deleting a completion.
 
+Explicitly **out of scope** for v1: push notifications, shared/team accounts, analytics dashboards, and advanced scheduling (e.g., "every second Tuesday").
 
-## 3. Definitions
+## 3. Glossary
 
-- **Redo**: A recurring item defined by a name and interval.
-- **Completion**: A record created when a redo is completed.
-- **Skip**: An action that advances the due date without creating a completion.
-- **Due**: A redo whose next due date lies within a defined future window.
-- **Archived**: A redo that is inactive and excluded from active views.
-- **Interval**: A calendar-based recurrence defined by a numeric value and a unit.
+| Term | Meaning |
+|------|---------|
+| **Redo** | A recurring task defined by a name and an interval. |
+| **Completion** | A timestamped record created when a redo is marked done. |
+| **Skip** | Advancing a redo's due date without recording a completion. |
+| **Due** | A redo whose next due date falls within the configured lookahead window. |
+| **Archived** | A redo that has been shelved — hidden from active views but preserved with its full history. |
+| **Interval** | A recurrence period expressed as a positive integer and a unit (days, weeks, months, or years). |
 
+## 4. Authentication
 
-## 4. Users and Authentication
-
-### 4.1 Authentication
-- The system shall require users to authenticate before accessing any data.
-- The system shall support user registration, login, and logout.
-- Each redo and completion shall belong to exactly one user.
-
+- Users must log in before accessing any data.
+- The system supports registration, login, and logout.
+- Every redo and completion belongs to exactly one user — there is no shared ownership.
 
 ## 5. Categories
 
-### 5.1 Category definition
-- The system shall provide a predefined, system-managed list of categories.
-- Categories shall be selectable when creating or editing a redo.
-- Categories shall not be user-editable.
-- A redo may have zero or one category.
+- The system ships with a predefined set of categories (e.g., "Health", "Home", "Vehicle").
+- Users can assign a category when creating or editing a redo, but cannot create or modify categories themselves.
+- A redo has at most one category (or none).
 
+## 6. The Redo Entity
 
-## 6. Redo Entity
+### 6.1 User-defined attributes
 
-### 6.1 Required attributes
-Each redo shall have:
-- a name
-- an interval value (positive integer)
-- an interval unit (`days`, `weeks`, `months`, or `years`)
+| Attribute | Required | Notes |
+|-----------|----------|-------|
+| Name | Yes | Free-text label for the task. |
+| Interval value | Yes | A positive integer (e.g., `3`). |
+| Interval unit | Yes | One of `days`, `weeks`, `months`, `years`. |
+| Description | No | Optional free-text detail. |
+| Category | No | One of the predefined categories. |
 
-### 6.2 Optional attributes
-Each redo may have:
-- a description
-- a category
+### 6.2 System-managed attributes
 
-### 6.3 System-managed attributes
-Each redo shall have:
-- a unique identifier
-- an owning user identifier
-- a creation timestamp
-- a `last_completed_at` timestamp (nullable)
-- a `next_due_at` timestamp
-- an archived flag or timestamp
+| Attribute | Description |
+|-----------|-------------|
+| `id` | Unique identifier. |
+| `user_id` | Owning user. |
+| `created_at` | Timestamp of creation. |
+| `last_completed_at` | Timestamp of most recent completion, or `null` if never completed. |
+| `next_due_at` | When the redo is next due. |
+| `archived` | Whether the redo is archived (flag or timestamp). |
 
+## 7. Creating a Redo
 
-## 7. Redo Creation
+When a user creates a new redo:
 
-- When a redo is created, it shall be active.
-- When a redo is created, `last_completed_at` shall be `null`.
-- When a redo is created, `next_due_at` shall be set to the current date and time.
-- A newly created redo shall therefore be immediately due.
+1. It starts as **active** (not archived).
+2. `last_completed_at` is `null` — it has never been done.
+3. `next_due_at` is set to **now** — the task is immediately due.
 
+This means every new redo shows up in the "due" list right away, prompting the user to either complete it or skip it to set the first future due date.
 
-## 8. Redo Updating
+## 8. Editing a Redo
 
 ### 8.1 Editable fields
-The system shall allow the following redo fields to be updated:
-- name
-- description
-- category
-- interval value
-- interval unit
-- archive state
 
+Users can update: name, description, category, interval value, interval unit, and archive state.
 
-### 8.2 Updating non-interval fields
-- Updating name, description, or category shall not affect scheduling.
-- Updating archive state shall follow the rules in Section 9.
+### 8.2 Non-interval changes
 
+Changing the name, description, or category has **no effect on scheduling**. Archive state changes follow the rules in [Section 9](#9-archiving).
 
-### 8.3 Updating the interval
+### 8.3 Interval changes
 
-When a redo’s interval value or interval unit is changed, the system shall recompute the redo’s due date in a deterministic and history-preserving manner.
+When the interval value or unit changes, the system must recompute `next_due_at`. The goal is to be **deterministic and history-preserving** — no completions are created, deleted, or modified, and only the due date changes.
 
-#### 8.3.1 General rules
-- Updating the interval shall not create or delete completion records.
-- Updating the interval shall not modify the redo’s creation timestamp.
-- Updating the interval shall not modify completion history.
-- Updating the interval shall only affect `next_due_at`.
+#### 8.3.1 Constraints
 
+- No completion records are created or deleted.
+- The creation timestamp is untouched.
+- Completion history is untouched.
+- Only `next_due_at` is recalculated.
 
-#### 8.3.2 Reference date selection
+#### 8.3.2 Reference date
 
-To recompute the due date, the system shall determine a reference date as follows:
+To recompute the due date, the system picks a **reference date**:
 
-- If `last_completed_at` is not null, the reference date shall be:
+- If the redo has been completed at least once → use `last_completed_at`.
+- Otherwise → use `created_at`.
 
+#### 8.3.3 Recomputation formula
 
-#### 8.3.3 Due date recomputation
+```
+next_due_at = reference_date + new_interval
+```
 
-The system shall compute the new due date as:
+The addition respects calendar semantics (e.g., adding 1 month to Jan 31 yields Feb 28/29).
 
+#### 8.3.4 Overdue after an interval change
 
+If the recomputed `next_due_at` lands in the past, the redo is simply **overdue**. The system does not auto-skip or auto-complete — it surfaces the redo in the due list and lets the user decide.
 
-#### 8.3.4 Overdue handling after interval change
+## 9. Archiving
 
-- If the recomputed `next_due_at` lies in the past, the redo shall be considered overdue.
-- No automatic skipping, completion, or adjustment shall occur.
-- The redo shall appear in the due list according to the standard due-window rules.
+Archiving lets users hide redos they no longer care about without losing data.
 
+- Archived redos **do not appear** in the active list.
+- Archived redos **cannot be completed or skipped**.
+- Archived redos **keep their full completion history**.
+- Unarchiving a redo restores it exactly as it was — no history or due-date changes.
 
-## 9. Redo Archiving
+## 10. Completions
 
-- The system shall allow a redo to be archived.
-- Archived redos shall not appear in active redo lists.
-- Archived redos shall not be completable or skippable.
-- Archived redos shall retain all completion history.
-- The system shall allow archived redos to be unarchived.
-- Unarchiving shall not modify completion history or due dates.
+### 10.1 What a completion records
 
+Each completion stores:
 
-## 10. Completion Records
+- A unique identifier.
+- A reference to the parent redo.
+- A timestamp of when the completion occurred.
+- Optional key–value metadata (arbitrary string pairs, no schema enforced, keys must be non-empty).
 
-### 10.1 Completion creation
-- The system shall create a completion record when a user completes a redo.
-- Each completion shall store:
-  - a unique identifier
-  - a reference to the redo
-  - a completion timestamp
-  - optional user-defined key–value metadata
+### 10.2 Metadata
 
-### 10.2 Completion metadata
-- Metadata shall consist of arbitrary key–value string pairs.
-- Keys and values shall be user-defined.
-- Keys shall be non-empty.
-- No schema validation shall be applied.
+Metadata is intentionally free-form. Users can attach whatever context makes sense for a given task — mileage on an oil change, cost of a service, brand of a replacement filter, etc. No validation beyond requiring non-empty keys.
 
-
-## 11. Completion Behavior
+## 11. Completing and Skipping
 
 ### 11.1 Completing a redo
-When a redo is completed:
 
-- A completion record shall be created.
-- `last_completed_at` shall be set to the completion timestamp.
-- `next_due_at` shall be computed as:
+When a user marks a redo as complete:
 
+1. A new completion record is created.
+2. `last_completed_at` is set to the completion timestamp.
+3. `next_due_at` is recomputed as:
+
+```
+next_due_at = completion_timestamp + interval
+```
+
+The redo disappears from the due list until the new due date arrives.
+
+### 11.2 Skipping a redo
+
+When a user skips a redo:
+
+- No completion record is created.
+- `last_completed_at` is **not changed**.
+- `next_due_at` is advanced by one interval from its current value:
+
+```
+next_due_at = current_next_due_at + interval
+```
+
+Skipping is useful when a task isn't relevant this cycle (e.g., skipping a seasonal chore during the off-season).
+
+### 11.3 Undoing a completion
+
+Users can delete the most recent completion to correct mistakes. When a completion is deleted:
+
+- The completion record is removed.
+- `last_completed_at` reverts to the timestamp of the now-most-recent completion (or `null` if none remain).
+- `next_due_at` is recomputed from the new `last_completed_at` (or from `created_at` if no completions remain).
