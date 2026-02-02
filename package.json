@@ -1,0 +1,40 @@
+{
+  "name": "redo",
+  "private": true,
+  "license": "AGPL-3.0",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1"
+  },
+  "lint-staged": {
+    "backend/**/*.ts": [
+      "eslint --fix --config backend/eslint.config.js",
+      "prettier --write"
+    ],
+    "frontend/**/*.{ts,tsx}": [
+      "eslint --fix --config frontend/eslint.config.js",
+      "prettier --write"
+    ],
+    "*.{json,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

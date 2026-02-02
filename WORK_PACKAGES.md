@@ -16,41 +16,41 @@ Set up the monorepo structure with working `backend/` and `frontend/` packages, 
 
 #### Backend (`backend/`)
 
-- [ ] Initialize `package.json` with project metadata (name: `@redo/backend`, private, license: AGPL-3.0)
-- [ ] Install and configure TypeScript with `strict: true` in `tsconfig.json`
-- [ ] Set up the directory structure: `src/domain/`, `src/application/`, `src/infrastructure/`, `src/api/`
-- [ ] Install and configure Vitest as the test framework; add `tests/unit/` and `tests/integration/` directories
-- [ ] Create a minimal Express (or Fastify) server entry point (`src/main.ts`) that starts on a configurable port and responds to `GET /health` with `{ "status": "ok" }`
-- [ ] Add `build`, `dev`, `test`, `lint`, and `format` scripts to `package.json`
+- [x] Initialize `package.json` with project metadata (name: `@redo/backend`, private, license: AGPL-3.0)
+- [x] Install and configure TypeScript with `strict: true` in `tsconfig.json`
+- [x] Set up the directory structure: `src/domain/`, `src/application/`, `src/infrastructure/`, `src/api/`
+- [x] Install and configure Vitest as the test framework; add `tests/unit/` and `tests/integration/` directories
+- [x] Create a minimal Express (or Fastify) server entry point (`src/main.ts`) that starts on a configurable port and responds to `GET /health` with `{ "status": "ok" }`
+- [x] Add `build`, `dev`, `test`, `lint`, and `format` scripts to `package.json`
 
 #### Frontend (`frontend/`)
 
-- [ ] Scaffold a Vite + React + TypeScript project
-- [ ] Configure `tsconfig.json` with `strict: true`
-- [ ] Set up the directory structure: `src/components/`, `src/pages/`, `src/hooks/`, `src/services/`, `src/types/`, `src/utils/`
-- [ ] Install and configure Vitest + React Testing Library for unit tests
-- [ ] Install and configure Playwright for browser-based tests (`tests/`)
-- [ ] Create a minimal `App.tsx` that renders a placeholder page
-- [ ] Add `build`, `dev`, `test`, `test:e2e`, `lint`, and `format` scripts to `package.json`
+- [x] Scaffold a Vite + React + TypeScript project
+- [x] Configure `tsconfig.json` with `strict: true`
+- [x] Set up the directory structure: `src/components/`, `src/pages/`, `src/hooks/`, `src/services/`, `src/types/`, `src/utils/`
+- [x] Install and configure Vitest + React Testing Library for unit tests
+- [x] Install and configure Playwright for browser-based tests (`tests/`)
+- [x] Create a minimal `App.tsx` that renders a placeholder page
+- [x] Add `build`, `dev`, `test`, `test:e2e`, `lint`, and `format` scripts to `package.json`
 
 #### Shared / Root
 
-- [ ] Add a root `package.json` with workspace configuration (npm or pnpm workspaces)
-- [ ] Configure ESLint at the root with `typescript-eslint`, `eslint-plugin-import`; extend in each package with package-specific plugins (`eslint-plugin-react`, `eslint-plugin-react-hooks` for frontend)
-- [ ] Configure Prettier at the root with a shared `.prettierrc`
-- [ ] Set up Husky + lint-staged for pre-commit hooks (run ESLint + Prettier on staged files)
-- [ ] Add a root-level `README.md` update noting how to install, build, and run both packages
+- [x] Add a root `package.json` with workspace configuration (npm or pnpm workspaces)
+- [x] Configure ESLint at the root with `typescript-eslint`, `eslint-plugin-import`; extend in each package with package-specific plugins (`eslint-plugin-react`, `eslint-plugin-react-hooks` for frontend)
+- [x] Configure Prettier at the root with a shared `.prettierrc`
+- [x] Set up Husky + lint-staged for pre-commit hooks (run ESLint + Prettier on staged files)
+- [x] Add a root-level `README.md` update noting how to install, build, and run both packages
 
 ### Acceptance Criteria
 
-- [ ] Running `npm install` (or `pnpm install`) at the root installs all dependencies for both packages
-- [ ] `npm run build` succeeds for both backend and frontend
-- [ ] `npm run lint` passes with zero errors and zero warnings for both packages
-- [ ] `npm run format -- --check` passes (all files formatted)
-- [ ] `npm run test` runs and passes (even if there are only placeholder tests)
-- [ ] The backend health endpoint responds correctly when the dev server is started
-- [ ] The frontend renders the placeholder page when the dev server is started
-- [ ] Pre-commit hook fires and blocks commits with lint/format violations
+- [x] Running `npm install` (or `pnpm install`) at the root installs all dependencies for both packages
+- [x] `npm run build` succeeds for both backend and frontend
+- [x] `npm run lint` passes with zero errors and zero warnings for both packages
+- [x] `npm run format -- --check` passes (all files formatted)
+- [x] `npm run test` runs and passes (even if there are only placeholder tests)
+- [x] The backend health endpoint responds correctly when the dev server is started
+- [x] The frontend renders the placeholder page when the dev server is started
+- [x] Pre-commit hook fires and blocks commits with lint/format violations
 
 ---
 
